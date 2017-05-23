@@ -9,7 +9,14 @@ import org.apache.stanbol.client.enhancer.model.TextAnnotation;
 import org.apache.stanbol.client.entityhub.model.Entity;
 import org.apache.stanbol.client.simpleAnno.PDFTextParser;
 import org.apache.stanbol.client.simpleAnno.SAClient;
+import org.pdfbox.cos.COSDocument;
+import org.pdfbox.pdfparser.PDFParser;
+import org.pdfbox.pdmodel.PDDocument;
+import org.pdfbox.util.PDFTextStripper;
 
+import javax.activation.MimetypesFileTypeMap;
+import java.io.File;
+import java.io.FileInputStream;
 import java.util.Collection;
 import java.util.Map;
 
@@ -17,7 +24,6 @@ import java.util.Map;
  * Created by yamenj on 24.04.17.
  */
 public class Main {
-
 
 
     public static void main(String[] args) throws Exception {
@@ -35,54 +41,82 @@ public class Main {
                 "anterior abutment-crown step by step.";
 
 
-        String file = "/home/yamenj/Development/Simple-Anno/Fallberichte/impl_2015_03_s0305.pdf";
-        String file2 = "/home/yamenj/Development/Simple-Anno/Fallberichte/test.txt";
-
         // getEntities
-        SAClient client = new SAClient();
-        Collection<Entity> entities = client.getEntities(text);
-        client.printEntityCollection(entities);
+//        SAClient client = new SAClient();
+//        Collection<Entity> entities = client.getEntities(text);
+//        client.printEntityCollection(entities);
 
         // getTextAnnotations
 //        SAClient client = new SAClient();
-        Collection<TextAnnotation> annotations = client.getTextAnnotations(text);
-        client.printTextAnnotations(annotations);
+//        Collection<TextAnnotation> annotations = client.getTextAnnotations(text);
+//        client.printTextAnnotations(annotations);
 
 
-        enhanceText(text);
-//        enhanceTXTFile(file);
-//        enhanceFile(file);
+        /**
+         * Enhance Text
+         */
+//        Map<String, Integer> map = enhanceText();
+//        System.out.println("MAP -> " + map);
+
+        /**
+         * Enhance File
+         */
+        File file = new File("/home/yamenj/Development/Simple-Anno/Fallberichte/impl_2015_04_s0433.pdf");
+        Map<String, Integer> map = enhanceFile(file);
+        System.out.println("MAP -> " + map);
+    }
+
+    public static String convertPDFtoText(File file) {
+        PDFParser parser;
+        PDDocument pdDoc = null;
+        COSDocument cosDoc = null;
+        PDFTextStripper pdfStripper;
+        String parsedText;
+        String text = null;
+        try {
+            try {
+                parser = new PDFParser(new FileInputStream(file));
+                parser.parse();
+                cosDoc = parser.getDocument();
+                pdfStripper = new PDFTextStripper();
+                pdDoc = new PDDocument(cosDoc);
+                parsedText = pdfStripper.getText(pdDoc);
+                text = parsedText.replaceAll("[^A-Za-z0-9. ]+", "");
+//                System.out.println(text);
+            } finally {
+                if (cosDoc != null)
+                    cosDoc.close();
+                if (pdDoc != null)
+                    pdDoc.close();
+            }
+        } catch (Exception e1) {
+            e1.printStackTrace();
+        }
+        return text;
+    }
+
+    public static void getMimeType(File file) {
+        System.out.println("Mime Type of " + file.getName() + " is " +
+                new MimetypesFileTypeMap().getContentType(file));
 
     }
 
-    public static void enhanceText(String text) throws Exception {
+
+    public static Map<String, Integer> enhanceText(String text) throws Exception {
         SAClient client = new SAClient();
         Map<String, Integer> map =  client.enhanceText(text);
-        System.out.println("MAP -> " + map);
+        return map;
+
 
     }
 
-    /**
-     * For now converting the pdf to txt as a temporarily solution
-     * @param file
-     * @throws Exception
-     */
-    public static void enhanceFile(String file) throws Exception {
-        PDFTextParser pdfTextParserObj = new PDFTextParser();
-        String pdfToText = pdfTextParserObj.pdftoText(file);
-        pdfTextParserObj.writeTexttoFile(pdfToText, file+"new"+".txt");
 
+    public static Map<String, Integer> enhanceFile(File file) throws Exception {
+
+        String text = convertPDFtoText(file);
         SAClient client = new SAClient();
-        Map<String, Integer> map =  client.enhanceFile(file+".txt");
-        System.out.println("MAP -> " + map);
-
-    }
-
-    public static void enhanceTXTFile(String file) throws Exception {
-
-        SAClient client = new SAClient();
-        Map<String, Integer> map =  client.enhanceFile(file);
-        System.out.println("MAP -> " + map);
+        Map<String, Integer> map =  client.enhanceText(text);
+        return map;
 
     }
 

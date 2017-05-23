@@ -58,8 +58,12 @@ public class RestClientExecutor {
 	public static Response post(URI uri, Entity<?> entity, MediaType acceptType){
 		WebTarget target = builder.build().target(uri);
 		Builder httpRequest = target.request();
-		if(acceptType != null)
+		// In case of application/pdf content type
+//		MediaType pdf = new MediaType("application", "pdf");
+//		httpRequest.header("Content-Type", pdf);
+		if(acceptType != null) {
 			httpRequest.accept(acceptType);
+		}
 		return httpRequest.post(entity);
 	}
 

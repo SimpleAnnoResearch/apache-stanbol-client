@@ -1,6 +1,8 @@
 package org.apache.stanbol.client.simpleAnno;
 
 import com.google.common.collect.Multimap;
+import com.hp.hpl.jena.util.Metadata;
+import org.apache.jena.atlas.web.MediaType;
 import org.apache.stanbol.client.Enhancer;
 import org.apache.stanbol.client.StanbolClientFactory;
 import org.apache.stanbol.client.enhancer.impl.EnhancerParameters;
@@ -10,6 +12,8 @@ import org.apache.stanbol.client.exception.StanbolClientException;
 import org.apache.stanbol.client.services.exception.StanbolServiceException;
 import org.apache.stanbol.client.simpleAnno.ClientMapper;
 import org.apache.stanbol.client.simpleAnno.EnhancementParser;
+import org.apache.tika.detect.Detector;
+import org.apache.tika.detect.MagicDetector;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -89,7 +93,6 @@ public class SAClient {
         Map<String, Integer> sortedMap = sortByValue(labels);
         return sortedMap;
     }
-
 
 
     /**
